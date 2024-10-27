@@ -5,6 +5,7 @@ import Scheduler from "./sections/Scheduler";
 import Login from "./sections/Login";
 import { Navigate } from "react-router-dom";
 import Profile from "./sections/Profile";
+import Appointment from "./sections/Appointment";
 
 function App() {
 
@@ -16,7 +17,7 @@ function App() {
       <Routes>
             <Route path="/login" element={<Login />} />
             <Route
-              path="/home"
+              path="/"
               element={
                 <ProtectedRoute allowedRoles={["scheduler", "surgeon"]}>
                   <Home />
@@ -36,6 +37,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["surgeon"]}>
                   <Profile />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/appointment"
+              element={
+                <ProtectedRoute allowedRoles={["surgeon"]}>
+                  <Appointment />
                 </ProtectedRoute>
               }
             />

@@ -4,9 +4,9 @@ import { LogOut } from "lucide-react";
 
 const NavItems = ({ onLogout, role, isLoggedIn }) => {
   const links = [
-    { id: 1, name: "Home", href: "/home", roles: ["scheduler", "surgeon"] },
-    { id: 2, name: "Scheduler", href: "/scheduler", roles: ["scheduler"] },
-    { id: 2, name: "Dashboard", href: "/dashboard", roles: ["surgeon"] },
+     { id: 2, name: "Scheduler", href: "/scheduler", roles: ["scheduler"] },
+    { id: 3, name: "Dashboard", href: "/dashboard", roles: ["surgeon"] },
+    { id: 4, name: "Appointment", href: "/appointment", roles: ["surgeon"] },
   ];
 
   return (

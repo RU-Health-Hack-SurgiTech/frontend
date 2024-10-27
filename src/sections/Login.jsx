@@ -25,7 +25,7 @@ const Login = () => {
       .post("http://localhost:3000/login/", { username, password })
       .then((res) => {
         if (res.data.login) {
-          navigate("/home");
+          navigate("/");
           localStorage.setItem("role", res.data.role);
           localStorage.setItem("username", username);
           localStorage.setItem("isLogin", res.data.login);

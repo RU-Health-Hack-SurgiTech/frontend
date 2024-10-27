@@ -11,26 +11,25 @@ const SurgeonProfile = ({ surgeonData }) => {
   const { name, specialty, username, procedures, appointments } = surgeonData;
 
   return (
-    <div className="max-w-6xl mx-auto p-6 bg-gray-100 flex gap-4">
+    <div className="w-screen mx-auto p-8 bg-gray-100 flex gap-4">
       <div className="flex flex-col gap-4">
         {/* Profile Info Section */}
         <div className="bg-white p-6 rounded-lg shadow-md">
-          <h2 className="text-2xl font-bold text-gray-700">Surgeon Profile</h2>
+          <h2 className="text-2xl font-bold text-gray-700">{name}</h2>
           <div className="mt-4 flex items-center space-x-4">
             <Stethoscope className="text-red-500 w-6 h-6" />
             <div>
-              <p className="text-xl font-semibold text-gray-800">{name}</p>
               <p className="text-gray-500">{specialty}</p>
               <p className="text-sm text-gray-400">@{username}</p>
             </div>
           </div>
         </div>
         {/* Appointments Section */}
-        <div className="bg-white p-6 rounded-lg shadow-md">
+        <div className="bg-white p-6 rounded-lg shadow-md h-full">
           <h2 className="text-2xl font-bold text-gray-700">
             Upcoming Appointments
           </h2>
-          <div className="mt-4 space-y-4">
+          <div className="mt-4 overflow-y-auto h-[50vh]">
             {appointments.map((appointment) => (
               <div
                 key={appointment._id}
@@ -56,9 +55,9 @@ const SurgeonProfile = ({ surgeonData }) => {
       </div>
 
       {/* Procedures Section */}
-      <div className="bg-white p-6 rounded-lg shadow-md">
+      <div className="bg-white p-6 rounded-lg shadow-md w-full">
         <h2 className="text-2xl font-bold text-gray-700">Procedures</h2>
-        <div className="mt-4 space-y-6">
+        <div className="mt-4 grid grid-cols-3 gap-4 overflow-y-auto h-[70vh]">
           {procedures.map((procedure, index) => (
             <div
               key={procedure._id}
