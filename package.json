@@ -10,10 +10,13 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@aws-amplify/auth": "^6.5.4",
     "@fullcalendar/core": "^6.1.15",
     "@fullcalendar/daygrid": "^6.1.15",
     "@fullcalendar/react": "^6.1.15",
     "@headlessui/react": "^2.2.0",
+    "amazon-cognito-identity-js": "^6.3.12",
+    "aws-amplify": "^6.6.7",
     "axios": "^1.7.7",
     "framer-motion": "^11.11.10",
     "lucide-react": "^0.453.0",

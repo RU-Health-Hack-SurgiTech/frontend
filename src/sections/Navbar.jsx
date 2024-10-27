@@ -21,9 +21,12 @@ const NavItems = ({ onLogout, role, isLoggedIn }) => {
           </li>
         ))}
       {!isLoggedIn && (
-        <li className="nav-li">
+        <li className="nav-li flex items-center gap-2">
           <Link to="/login" className="nav-li_a">
             Login
+          </Link>
+          <Link to="/signup" className="nav-li_a">
+            Signup
           </Link>
         </li>
       )}

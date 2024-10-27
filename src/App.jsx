@@ -3,11 +3,48 @@ import Navbar from "./sections/Navbar";
 import Home from "./sections/Home";
 import Scheduler from "./sections/Scheduler";
 import Login from "./sections/Login";
+import Signup from "./sections/Signup";
 import { Navigate } from "react-router-dom";
 import Profile from "./sections/Profile";
 import Appointment from "./sections/Appointment";
+import userpool from "./userpool";
+import { useEffect } from "react";
 
 function App() {
+  useEffect(() => {
+    const user = userpool.getCurrentUser();
+    if (user) {
+      user.getSession((err, session) => {
+        if (err) {
+          console.error("Error getting user session:", err);
+          return;
+        }
+
+        // Get user attributes
+        user.getUserAttributes((err, attributes) => {
+          if (err) {
+            console.error("Error getting user attributes:", err);
+            return;
+          }
+
+          // Convert attributes to an object for easy access
+          const attributesObj = {};
+          attributes.forEach(attr => {
+            attributesObj[attr.Name] = attr.Value;
+          });
+
+          console.log("User attributes:", attributesObj);
+
+          // Store role and login status in localStorage
+          localStorage.setItem("isLogin", "true");
+          localStorage.setItem("role", attributesObj["custom:role"]);
+        });
+      });
+    } else {
+      localStorage.setItem("isLogin", "false");
+      localStorage.removeItem("role");
+    }
+  }, []);
 
   return (
     <Router>
@@ -16,6 +53,7 @@ function App() {
       <main className="flex-grow max-w-[150rem] mx-auto relative">
       <Routes>
             <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
             <Route
               path="/"
               element={
