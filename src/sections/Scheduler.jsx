@@ -137,6 +137,26 @@ const Scheduler = () => {
     setShowDialog(false);
   };
 
+  const handleConfirmAppointments = () => {
+    const appointmentsToConfirm = calendarEvents.map((event) => ({
+      appointmentId: event.id,
+      time: event.start,
+    }));
+
+    axios
+      .patch("http://localhost:3000/scheduler/confirmAppointments", {
+        appointments: appointmentsToConfirm,
+      })
+      .then((res) => {
+        alert(res.data.message);
+        // Optional: Clear confirmed events from local state
+        setCalendarEvents((prevEvents) =>
+          prevEvents.map((event) => ({ ...event, isScheduled: true }))
+        );
+      })
+      .catch((err) => console.error("Error confirming appointments:", err));
+  };
+
   useEffect(() => {
     let postData = {};
     postData.schedule = calendarEvents.map((event) => {
@@ -271,7 +291,7 @@ const Scheduler = () => {
         ))}
       </div>
 
-      <div className="flex-grow p-4 h-full shadow-md rounded-md bg-gray-50 overflow-y-auto">
+      <div className="flex flex-col justify-center w-full items-center p-4 h-full shadow-md rounded-md bg-gray-50">
         <DnDCalendar
           localizer={localizer}
           events={calendarEvents}
@@ -279,7 +299,7 @@ const Scheduler = () => {
           endAccessor="end"
           step={30} // Each slot represents 30 minutes
           timeslots={1}
-          style={{ height: "100%", padding: "10px" }}
+          style={{ height: "90%", padding: "10px", width: "100%" }}
           selectable
           resizable={false}
           scrollToTime={new Date()}
@@ -295,6 +315,12 @@ const Scheduler = () => {
             start: new Date(),
           }}
         />
+        <button
+          onClick={handleConfirmAppointments}
+          className="w-48 mt-4 p-2 bg-green-600 text-white rounded hover:bg-green-700"
+        >
+          Confirm Appointments
+        </button>
       </div>
       {showDialog &&
         adjustedSchedules.map((adjustment) => (
