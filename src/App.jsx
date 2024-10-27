@@ -4,6 +4,7 @@ import Home from "./sections/Home";
 import Scheduler from "./sections/Scheduler";
 import Login from "./sections/Login";
 import { Navigate } from "react-router-dom";
+import Profile from "./sections/Profile";
 
 function App() {
 
@@ -27,6 +28,14 @@ function App() {
               element={
                 <ProtectedRoute allowedRoles={["scheduler"]}>
                   <Scheduler />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard"
+              element={
+                <ProtectedRoute allowedRoles={["surgeon"]}>
+                  <Profile />
                 </ProtectedRoute>
               }
             />

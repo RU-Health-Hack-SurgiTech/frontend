@@ -6,6 +6,7 @@ const NavItems = ({ onLogout, role, isLoggedIn }) => {
   const links = [
     { id: 1, name: "Home", href: "/home", roles: ["scheduler", "surgeon"] },
     { id: 2, name: "Scheduler", href: "/scheduler", roles: ["scheduler"] },
+    { id: 2, name: "Dashboard", href: "/dashboard", roles: ["surgeon"] },
   ];
 
   return (
