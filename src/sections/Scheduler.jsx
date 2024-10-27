@@ -119,6 +119,7 @@ const Scheduler = () => {
     if (draggedSurgery) {
       // Ensure the surgery is dropped before its 'surgeryBefore' time
       const surgeryBeforeTime = new Date(draggedSurgery.surgeryBefore);
+      const currentDateTime = new Date();
       let newStartTime = slotInfo.start;
       let newEndTime = moment(newStartTime)
         .add(draggedSurgery.duration, "minutes")
@@ -145,7 +146,7 @@ const Scheduler = () => {
           break; // No overlaps found, break the loop
         }
       }
-      if (newStartTime < surgeryBeforeTime) {
+      if (newStartTime < surgeryBeforeTime && newStartTime > currentDateTime) {
         const newEvent = {
           id: draggedSurgery._id,
           title: `${draggedSurgery.surgeryName} for ${draggedSurgery.patient}`,
@@ -164,6 +165,8 @@ const Scheduler = () => {
           prevData.filter((surgery) => surgery._id !== draggedSurgery._id)
         );
         setDraggedSurgery(null); // Clear the dragged surgery state
+      } else if (newStartTime <= currentDateTime) {
+        alert("Cannot schedule surgery in the past.");
       } else {
         alert("Cannot schedule surgery after the specified time.");
       }
@@ -265,6 +268,7 @@ const Scheduler = () => {
           style={{ height: "100%", padding: "10px" }}
           selectable
           resizable={false}
+          scrollToTime={new Date()}
           //   onSelectSlot={handleSlotSelect}
           onEventDrop={handleEventDrop}
           onDropFromOutside={handleSlotSelect}
@@ -272,6 +276,9 @@ const Scheduler = () => {
           views={["day", "week"]}
           components={{
             event: EventComponent,
+          }}
+          validRange={{
+            start: new Date(),
           }}
         />
       </div>
