@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Calendar as ScheduleCalendar,
   momentLocalizer,
@@ -8,106 +8,18 @@ import "react-big-calendar/lib/css/react-big-calendar.css";
 import { User, Stethoscope, Calendar, ClipboardList } from "lucide-react";
 import withDragAndDrop from "react-big-calendar/lib/addons/dragAndDrop";
 import "react-big-calendar/lib/addons/dragAndDrop/styles.css";
+import axios from "axios";
 
 const localizer = momentLocalizer(moment);
 const DnDCalendar = withDragAndDrop(ScheduleCalendar);
 
 const Scheduler = () => {
-  const [surgeryData, setSurgeryData] = useState([
-    {
-      _id: "653acb1e8a432ab12c6a1f10",
-      patient: "Emily Davis",
-      surgeon: "Dr. John Doe",
-      surgeryBefore: "2024-10-26T10:00:00",
-      surgery: "44950",
-      surgeryName: "Appendectomy",
-      duration: 90, // Duration in minutes
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f11",
-      patient: "Jane Smith",
-      surgeon: "Dr. James White",
-      surgeryBefore: "2024-10-26T12:00:00",
-      surgery: "44950",
-      surgeryName: "Appendectomy",
-      duration: 90,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f12",
-      patient: "Jane Smith",
-      surgeon: "Dr. John Doe",
-      surgeryBefore: "2024-10-26T14:00:00",
-      surgery: "47562",
-      surgeryName: "Cholecystectomy",
-      duration: 60,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f13",
-      patient: "Christopher Harris",
-      surgeon: "Dr. Sarah Lee",
-      surgeryBefore: "2024-10-26T16:00:00",
-      surgery: "47562",
-      surgeryName: "Cholecystectomy",
-      duration: 60,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f14",
-      patient: "Christopher Harris",
-      surgeon: "Dr. James White",
-      surgeryBefore: "2024-10-26T18:00:00",
-      surgery: "66984",
-      surgeryName: "Cataract Surgery",
-      duration: 45,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f15",
-      patient: "Emily Davis",
-      surgeon: "Dr. James White",
-      surgeryBefore: "2024-10-26T20:00:00",
-      surgery: "66984",
-      surgeryName: "Cataract Surgery",
-      duration: 45,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f16",
-      patient: "Michael Johnson",
-      surgeon: "Dr. James White",
-      surgeryBefore: "2024-10-26T22:00:00",
-      surgery: "47562",
-      surgeryName: "Cholecystectomy",
-      duration: 60,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f17",
-      patient: "Emily Davis",
-      surgeon: "Dr. James White",
-      surgeryBefore: "2024-10-27T00:00:00",
-      surgery: "44950",
-      surgeryName: "Appendectomy",
-      duration: 90,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f18",
-      patient: "Emily Davis",
-      surgeon: "Dr. Sarah Lee",
-      surgeryBefore: "2024-10-27T02:00:00",
-      surgery: "66984",
-      surgeryName: "Cataract Surgery",
-      duration: 45,
-    },
-    {
-      _id: "653acb1e8a432ab12c6a1f19",
-      patient: "Michael Johnson",
-      surgeon: "Dr. John Doe",
-      surgeryBefore: "2024-10-27T04:00:00",
-      surgery: "66984",
-      surgeryName: "Cataract Surgery",
-      duration: 45,
-    },
-  ]);
+  const [surgeryData, setSurgeryData] = useState([]);
 
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [draggedSurgery, setDraggedSurgery] = useState(null);
+  const [adjustedSchedules, setAdjustedSchedules] = useState([]);
+  const [showDialog, setShowDialog] = useState(false);
 
   // Start dragging a surgery card
   const handleDragStart = (surgery) => {
@@ -183,6 +95,79 @@ const Scheduler = () => {
     setCalendarEvents(updatedEvents);
   };
 
+  const handleAccept = (adjustment) => {
+    setCalendarEvents((prevEvents) =>
+      prevEvents.map((event) =>
+        event.id === adjustment._id
+          ? {
+              ...event,
+              start: new Date(adjustment.time),
+              end: moment(new Date(adjustment.time))
+                .add(event.duration, "minutes")
+                .toDate(),
+            }
+          : event
+      )
+    );
+    setAdjustedSchedules((prev) =>
+      prev.filter((item) => item._id !== adjustment._id)
+    );
+    setShowDialog(false);
+  };
+
+  const handleReject = (adjustment) => {
+    setCalendarEvents((prevEvents) =>
+      prevEvents.filter((event) => event.id !== adjustment._id)
+    );
+    setSurgeryData((prevData) => [
+      ...prevData,
+      {
+        _id: adjustment._id,
+        patient: adjustment.patient,
+        surgeon: adjustment.surgeon,
+        surgeryBefore: adjustment.surgeryBefore,
+        surgery: adjustment.surgery,
+        surgeryName: adjustment.surgeryName,
+        duration: adjustment.duration,
+      },
+    ]);
+    setAdjustedSchedules((prev) =>
+      prev.filter((item) => item._id !== adjustment._id)
+    );
+    setShowDialog(false);
+  };
+
+  useEffect(() => {
+    let postData = {};
+    postData.schedule = calendarEvents.map((event) => {
+      return {
+        time: event.start,
+        appointmentId: event.id,
+      };
+    });
+    axios
+      .post("http://localhost:3000/scheduler/", postData)
+      .then((res) => {
+        const { suggestedSchedule } = res.data;
+        const adjustments = suggestedSchedule.filter((item) => item.adjusted);
+
+        if (adjustments.length > 0) {
+          setAdjustedSchedules(adjustments);
+          setShowDialog(true);
+        }
+      })
+      .catch((err) => console.warn(err));
+  }, [calendarEvents]);
+
+  useEffect(() => {
+    axios
+      .get("http://localhost:3000/scheduler/appointments")
+      .then((res) => {
+        setSurgeryData(res.data);
+      })
+      .catch((err) => setSurgeryData([]));
+  }, []);
+
   const handleCancel = (eventId) => {
     const eventToCancel = calendarEvents.find((event) => event.id === eventId);
     if (eventToCancel) {
@@ -202,8 +187,10 @@ const Scheduler = () => {
             duration: eventToCancel.duration,
           },
         ];
-  
-        return updatedData.sort((a, b) => new Date(a.surgeryBefore) - new Date(b.surgeryBefore));
+
+        return updatedData.sort(
+          (a, b) => new Date(a.surgeryBefore) - new Date(b.surgeryBefore)
+        );
       });
     }
   };
@@ -217,6 +204,31 @@ const Scheduler = () => {
       >
         Cancel
       </button>
+    </div>
+  );
+
+  const AdjustmentDialog = ({ adjustment }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center">
+      <div className="bg-white p-6 rounded-md shadow-md max-w-md w-full">
+        <h2 className="text-xl font-semibold mb-4">Adjustment Required</h2>
+        <p>Original Time: {adjustment.originalTime}</p>
+        <p>Suggested Time: {adjustment.time}</p>
+        <p>Reason: {adjustment.reason.join(", ")}</p>
+        <div className="flex mt-4 justify-end gap-4">
+          <button
+            onClick={() => handleReject(adjustment)}
+            className="bg-red-600 text-white px-4 py-2 rounded-md hover:bg-red-700"
+          >
+            Reject
+          </button>
+          <button
+            onClick={() => handleAccept(adjustment)}
+            className="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700"
+          >
+            Accept
+          </button>
+        </div>
+      </div>
     </div>
   );
 
@@ -265,6 +277,8 @@ const Scheduler = () => {
           events={calendarEvents}
           startAccessor="start"
           endAccessor="end"
+          step={30} // Each slot represents 30 minutes
+          timeslots={1}
           style={{ height: "100%", padding: "10px" }}
           selectable
           resizable={false}
@@ -282,6 +296,10 @@ const Scheduler = () => {
           }}
         />
       </div>
+      {showDialog &&
+        adjustedSchedules.map((adjustment) => (
+          <AdjustmentDialog key={adjustment._id} adjustment={adjustment} />
+        ))}
     </div>
   );
 };
